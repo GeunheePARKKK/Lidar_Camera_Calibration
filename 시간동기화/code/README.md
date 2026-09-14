@@ -6,7 +6,7 @@
 | `lidar_capture.py` | Velodyne UDP 2368/8308 → pcap. 일반 UDP 소켓으로 받아 헤더를 다시 붙이므로 root 권한 불필요 |
 | `vlp16.py` | VLP-16 pcap 디코더 (numpy 벡터화, 방위각 보간). 링 고도각 오차 0.0000°, 285만 점 / 0.31 s |
 | `check_session.py` | 세션 검산 — ESP32 트리거·노출 카운트, 라이다 유실·회전·PPS, 카메라 FrameID |
-| `sync_report.py` | 동기 판정 — 라이다 위상, 카메라↔라이다 간격, GPRMC 시각 대조, **셔터 순간 라이다 방위각** |
+| `sync_report.py` | 동기 판정 — 라이다 위상, 카메라↔라이다 간격, GPRMC 시각 대조, **셔터 순간 라이다 방위각**, **카메라 트리거 → 노출 지연** |
 | `lidar_config.py` | 라이다 설정 조회·변경 (rpm, Phase Lock), 플래시 저장, PPS/NMEA 실시간 감시 |
 | `to_rosbag.py` | 세션 → rosbag2 (`/velodyne_points`, `/cam<N>/image_raw`) |
 | `preview_session.py` | 카메라 프레임 + 라이다 평면도·측면도를 PNG / GIF / MP4로 |

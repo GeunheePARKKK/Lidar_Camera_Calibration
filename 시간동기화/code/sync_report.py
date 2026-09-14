@@ -186,7 +186,60 @@ def gprmc_check(pos):
     return True
 
 
-def trigger_azimuth(session_dir, d):
+def camera_latency(session_dir):
+    """카메라 트리거(FSYNC 엣지) → 실제 노출 시작까지의 지연.
+
+    ESP32 는 트리거 시각(T 줄)과, 카메라 Line1(ExposureActive)이 LOW 로
+    떨어진 시각(EXP 줄)을 같은 us 시계로 기록한다. 둘의 차가 카메라 쪽 지연이고,
+    사진의 실제 노출 시작 = 트리거 시각 + 이 값이다.
+
+    Line1 이 ESP32 에 연결되어 있어야 하고, 펌웨어는 EXP 를 세션당
+    EXP_LOG_LIMIT(원본 10)줄만 남긴다.
+    2026-09-15 실측: session_019 12~13 us, session_020 12~14 us (평균 12.8 us).
+    """
+    path = os.path.join(session_dir, "mcu_log.txt")
+    if not os.path.exists(path):
+        return None
+    # 기록된 카메라의 채널만 본다. 연결 안 된 Line1 입력은 잡음을 받아
+    # EXP 를 찍는다 — 2026-09-14 session_017 에서 채널 2 잡음이 트리거 후
+    # 8 ms 부근에 찍혀 노출 지연 8,132 us 로 오판된 적이 있다.
+    slots = sorted(int(x[3:]) for x in os.listdir(session_dir)
+                   if x.startswith("cam") and x[3:].isdigit())
+    trig, lat, odd = {}, [], []
+    with open(path, encoding="utf-8", errors="replace") as f:
+        lines = [ln.strip().split(",") for ln in f]
+    for p in lines:
+        if p[0] == "T" and len(p) >= 3:
+            try:
+                trig[int(p[1])] = int(p[2])
+            except ValueError:
+                pass
+    for p in lines:
+        if p[0] == "EXP" and len(p) >= 4:
+            try:
+                cam, n, t = int(p[1]), int(p[2]), int(p[3])
+            except ValueError:
+                continue
+            if slots and cam not in slots:
+                continue
+            if n not in trig:
+                continue
+            dt = t - trig[n]
+            # 노출 시작은 트리거 직후여야 한다 (실측 12~14 us). 1 ms 넘게 늦은
+            # 엣지는 노출 신호로 볼 수 없다.
+            (lat if 0 <= dt < 1000 else odd).append(dt)
+    if odd:
+        print(f"  [주의] 트리거 후 1 ms 밖의 Line1 엣지 {len(odd)}개는 제외 "
+              f"(예: {odd[0]} us) — 잡음이거나 배선 문제")
+    if not lat:
+        return None
+    lat = np.array(lat, float)
+    print(f"  카메라 트리거 → 노출 시작: {len(lat)}개 표본, "
+          f"{lat.min():.0f} ~ {lat.max():.0f} us, 평균 {lat.mean():.1f} us")
+    return float(lat.mean())
+
+
+def trigger_azimuth(session_dir, d, latency_us=0.0):
     """카메라 셔터가 열린 순간마다 라이다가 가리키던 방위각.
 
     세 시계를 하나로 잇는다.
@@ -233,7 +286,7 @@ def trigger_azimuth(session_dir, d):
         i = np.searchsorted(pe, tu, side="right") - 1
         if i < 0:
             continue
-        lid = pl[i] + (tu - pe[i])
+        lid = pl[i] + (tu - pe[i]) + latency_us
         lid += np.round((mid - lid) / 3600e6) * 3600e6
         if t_l[0] <= lid <= t_l[-1]:
             out.append(np.rad2deg(np.interp(lid, t_l, az)) % 360.0)
@@ -351,6 +404,13 @@ def main():
             print("\n셔터 순간 라이다 방위각 — ESP32 트리거 시각을 PPS·GPRMC 로 라이다 시각에 옮김")
             if trigger_azimuth(sd, d) is None:
                 print("  mcu_log.txt 에 트리거(T)나 GPRMC 기록이 없어 계산하지 못했습니다.")
+            print("\n카메라 노출 지연 — ESP32 가 기록한 Line1 엣지")
+            lat = camera_latency(sd)
+            if lat is None:
+                print("  노출 기록(EXP)이 없습니다. 카메라 Line1 이 ESP32 에 연결되어 있어야 합니다.")
+            else:
+                print(f"  → 실제 노출 시작 기준 (트리거 + {lat:.1f} us)")
+                trigger_azimuth(sd, d, latency_us=lat)
 
     print()
     if locked and offset_deg is None:

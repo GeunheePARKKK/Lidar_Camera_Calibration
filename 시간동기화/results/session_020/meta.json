@@ -1,0 +1,116 @@
+{
+  "created": "2026-09-15T01:45:43",
+  "duration_s": 20.0,
+  "format": "npy",
+  "trigger_hz": 10,
+  "lidar": {
+    "ip": "192.168.1.201",
+    "model": "VLP-16",
+    "data_port": 2368,
+    "position_port": 8308,
+    "settings": {
+      "laser": "On",
+      "returns": "Strongest",
+      "rpm": 600,
+      "fov": {
+        "start": 0,
+        "end": 359
+      },
+      "gpsctl": {
+        "gpsrxv": "Off"
+      },
+      "ppsctl": {
+        "delay": "5",
+        "gpsrxv": "Off",
+        "ppslck": "Off"
+      },
+      "phaselock": {
+        "enabled": "On",
+        "offset": "0"
+      },
+      "host": {
+        "addr": "255.255.255.255",
+        "dport": "2368",
+        "tport": "8308",
+        "udpcs": "Off"
+      },
+      "net": {
+        "addr": "192.168.1.201",
+        "mask": "255.255.255.0",
+        "gateway": "192.168.1.1",
+        "dhcp": "Off",
+        "mac_addr": "60-76-88-f0-3d-f3"
+      },
+      "active_net": {
+        "addr": "192.168.1.201",
+        "mask": "255.255.255.0",
+        "gateway": "192.168.1.1",
+        "dhcp": "Off",
+        "mac_addr": "60-76-88-f0-3d-f3"
+      },
+      "detthr": 20,
+      "dynthrsw": 20,
+      "show_advanced": "Off",
+      "disperser": {
+        "level": 0
+      },
+      "laserpwr": {
+        "extpwren": "Off"
+      }
+    },
+    "status": {
+      "gps": {
+        "pps_state": "Locked",
+        "position": "35 52.2840N 128 36.0840E"
+      },
+      "motor": {
+        "state": "On",
+        "rpm": 601,
+        "lock": "On",
+        "phase": 35993
+      },
+      "laser": {
+        "state": "On"
+      }
+    },
+    "path": "/home/acelab/ros2_ws/cam_lidar_recording/sessions/session_020/lidar.pcap",
+    "packets_written": 18760,
+    "bytes_written": 21388776,
+    "data_packets": 15844,
+    "host_span_s": 21.025,
+    "lidar_span_s": 21.025,
+    "first_host_unix": 1789404343.7413898,
+    "last_host_unix": 1789404364.7668376,
+    "first_lidar_us": 2869207913,
+    "last_lidar_us": 2890233144,
+    "recv": 18812,
+    "dropped_queue": 0,
+    "expected_data_packets": 15853
+  },
+  "cameras": [
+    {
+      "name": "CAM1",
+      "sn": "FHH26070137",
+      "index": 0,
+      "width": 2048,
+      "height": 1200,
+      "pixel_format": "BayerGB8",
+      "exposure_us": 8000.0,
+      "gain_db": 8.0
+    }
+  ],
+  "trigger": {
+    "mode": "On",
+    "source": "Line0",
+    "activation": "RisingEdge",
+    "line1_source": "ExposureActive"
+  },
+  "camera_slots": [
+    1
+  ],
+  "stopped": "2026-09-15T01:46:04",
+  "frames_written": {
+    "cam1": 200
+  },
+  "mcu_cnt": "CNT,200,200,0,0,0"
+}

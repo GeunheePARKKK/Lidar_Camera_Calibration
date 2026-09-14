@@ -34,6 +34,12 @@ Serial.setTxTimeoutMs(0);   // USB 출력이 막혀도 기다리지 않고 버�
 
 더 근본적으로는 PPS·FSYNC의 하강도 `loop()`가 아니라 타이머(두 번째 알람 등)에서 처리하는 것이 맞습니다.
 
+## 노출 기록은 세션당 10줄
+
+`EXP_LOG_LIMIT = 10` 이라 Line1 노출 엣지(`EXP` 줄)는 세션마다 앞의 10개만 로그에 남습니다 (카운트 `CNT`는 전부 셈). 카메라 트리거 → 노출 지연(실측 12.8 µs)을 세션 전체로 확인하려면 이 값을 늘려야 합니다. 노출은 10 Hz라 로그 부담은 작습니다.
+
+`EXP_LOCKOUT_US = 50000` (50 ms)은 한 번 센 뒤 50 ms 동안 다음 엣지를 무시합니다. 연결되지 않은 입력이 잡음을 받으면 락아웃이 풀릴 때마다 세서 트리거의 약 2배가 찍힙니다 (트러블슈팅 18번).
+
 ## 부팅 로그의 PSRAM 오류
 
 UART 포트로 보면 `E (183) quad_psram: PSRAM chip is not connected, or wrong PSRAM line mode`가 찍힙니다. Arduino IDE의 PSRAM 설정이 보드와 안 맞아서 나오는 메시지로, 이 펌웨어는 PSRAM을 쓰지 않아 동작에는 영향이 없습니다. `Tools → PSRAM`을 보드에 맞추면(N16R8이면 `OPI PSRAM`, 없으면 `Disabled`) 사라집니다.
